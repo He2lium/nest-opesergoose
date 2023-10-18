@@ -1,1 +1,1 @@
-# Yandex Cloud API Gateway swagger generator
+# NestJS module for Opesergoose mongoose plugin
