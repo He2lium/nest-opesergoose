@@ -2,11 +2,11 @@ import {MappingProperty} from "@opensearch-project/opensearch/api/types";
 import {MappingPropertyBaseWithPropertiesFromClass} from "../types/opeser-decorator.type";
 import {OpeserStorageType} from "../types/opeser-storage.type";
 import schema = OpeserStorageType.schema;
-import {ESMapGlobalStorage} from "../storage/opeser-mapping.storage";
+import {OpeserMappingStorage} from "../storage/opeser-mapping.storage";
 
 export function GetFiledMapUtil(options: MappingProperty) {
     if ((options as MappingPropertyBaseWithPropertiesFromClass).propertiesFromClass) {
-        const nestedSchema: schema = ESMapGlobalStorage.getSchemaByClass(
+        const nestedSchema: schema = OpeserMappingStorage.getSchemaByClass(
             (options as MappingPropertyBaseWithPropertiesFromClass).propertiesFromClass.name,
         )
         const map = {
