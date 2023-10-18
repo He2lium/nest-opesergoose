@@ -2,7 +2,7 @@ import {OpeserStorageType} from "../types/opeser-storage.type";
 import field = OpeserStorageType.field;
 import schema = OpeserStorageType.schema;
 
-export class EsMapStorage {
+export class OpeserMappingStorageClass {
     private schemas: schema[] = []
     private fields: field[] = []
 
@@ -29,5 +29,5 @@ export class EsMapStorage {
 
 // Global es-map storage
 const globalRef = global as any
-export const ESMapGlobalStorage =
-    globalRef.EsMapStorage || (globalRef.EsMapStorage = new EsMapStorage())
+export const OpeserMappingStorage =
+    globalRef.OpeserMappingStorage || (globalRef.OpeserMappingStorage = new OpeserMappingStorageClass())
