@@ -1,0 +1,36 @@
+{
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@nestjs/common": "^10.2.6",
+    "@nestjs/swagger": "^7.1.12",
+    "@opensearch-project/opensearch": "^2.4.0",
+    "opesergoose": "^1.0.3",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.1",
+    "uuidv4": "^6.2.13"
+  },
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "prepuplish": "npm run build"
+  },
+  "name": "nestjs-opesergoose",
+  "version": "1.0.0",
+  "description": "This module make Opesergoose for Nest",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.7.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.2.2"
+  },
+  "keywords": [
+    "nestjs",
+    "nest",
+    "opensearch",
+    "opesergoose"
+  ],
+  "author": "he2lium",
+  "license": "ISC"
+}
