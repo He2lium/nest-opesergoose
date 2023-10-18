@@ -8,6 +8,7 @@ import {MappingPropertyBaseWithPropertiesFromClass} from "./types/opeser-decorat
 import {OpeserAsyncOptions, OpeserOptions} from "./types/opeser-module-options.type";
 import {OpeserStorageType} from "./types/opeser-storage.type";
 import {OpeserMappingStorage} from "./storage/opeser-mapping.storage";
+import {OpeserPluginOptionFactory} from "./utils/opeser-plugin-option-factory.util";
 
 export {
     OpeserModule,
@@ -18,6 +19,7 @@ export {
     OgProp,
     InjectOpeser,
     OgSchema,
+    OpeserPluginOptionFactory,
     MappingPropertyBaseWithPropertiesFromClass,
     OpeserAsyncOptions,
     OpeserOptions,
