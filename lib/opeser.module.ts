@@ -2,11 +2,10 @@ import {DynamicModule, Module} from "@nestjs/common";
 import {OpeserService} from './opeser.service';
 import {
     OPESER_CLIENT_OPTIONS_TOKEN,
-    OPESER_CLIENT_TOKEN,
-    OPESER_PLUGIN_TOKEN
+    OPESER_CLIENT_TOKEN, OPESER_PLUGIN_CONNECTOR_TOKEN,
 } from "./opeser.constants";
 import {OpeserAsyncOptions, OpeserOptions} from "./types/opeser-module-options.type";
-import {OpesergooseFactory} from "opesergoose";
+import {OpeserConnectPluginFactory} from "./utils/opeser-connect-plugin.util";
 
 @Module({})
 export class OpeserModule {
@@ -24,11 +23,11 @@ export class OpeserModule {
                 useFactory: (options: OpeserOptions) => new OpeserService(options),
                 inject: [OPESER_CLIENT_OPTIONS_TOKEN]
             },{
-                provide: OPESER_PLUGIN_TOKEN,
-                useFactory: (opeserService: OpeserService)=>OpesergooseFactory(opeserService),
+                provide: OPESER_PLUGIN_CONNECTOR_TOKEN,
+                useFactory: (opeserService: OpeserService)=>OpeserConnectPluginFactory(opeserService),
                 inject: [OPESER_CLIENT_TOKEN]
             }],
-            exports: [OPESER_CLIENT_TOKEN, OPESER_PLUGIN_TOKEN]
+            exports: [OPESER_CLIENT_TOKEN, OPESER_PLUGIN_CONNECTOR_TOKEN]
         }
     }
 }
