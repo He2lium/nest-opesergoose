@@ -13,6 +13,6 @@ export const OpeserConnectPluginFactory = (client: OpeserService):OpeserPluginCo
     schema.plugin(OpesergooseFactory(client),{
         ...options,
         index,
-        mapProperties: OpeserMappingStorage.getSchemaByIndex(index),
+        mapProperties: OpeserMappingStorage.getSchemaByIndex(index).map ?? {},
     })
 }
