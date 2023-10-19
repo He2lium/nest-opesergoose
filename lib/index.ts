@@ -10,6 +10,7 @@ import {OpeserStorageType} from "./types/opeser-storage.type";
 import {OpeserMappingStorage} from "./storage/opeser-mapping.storage";
 import {OpeserPluginOptionFactory} from "./utils/opeser-plugin-option-factory.util";
 import {OpeserPluginConnector} from "./types/opeser-plugin-connector.type";
+import {OpeserStatic} from "opesergoose";
 
 export {
     OpeserModule,
@@ -25,5 +26,6 @@ export {
     MappingPropertyBaseWithPropertiesFromClass,
     OpeserAsyncOptions,
     OpeserOptions,
-    OpeserStorageType
+    OpeserStorageType,
+    OpeserStatic
 }
