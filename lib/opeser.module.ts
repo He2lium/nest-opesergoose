@@ -24,8 +24,8 @@ export class OpeserModule {
                 inject: [OPESER_CLIENT_OPTIONS_TOKEN]
             },{
                 provide: OPESER_PLUGIN_CONNECTOR_TOKEN,
-                useFactory: (opeserService: OpeserService)=>OpeserConnectPluginFactory(opeserService),
-                inject: [OPESER_CLIENT_TOKEN]
+                useFactory: (opeserService: OpeserService, options: OpeserOptions)=>OpeserConnectPluginFactory(opeserService, options.prefix),
+                inject: [OPESER_CLIENT_TOKEN, OPESER_CLIENT_OPTIONS_TOKEN]
             }],
             exports: [OPESER_CLIENT_TOKEN, OPESER_PLUGIN_CONNECTOR_TOKEN]
         }
