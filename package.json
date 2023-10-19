@@ -16,7 +16,7 @@
     "prepuplish": "npm run build"
   },
   "name": "nestjs-opesergoose",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "This module make Opesergoose for Nest",
   "files": [
     "dist"
