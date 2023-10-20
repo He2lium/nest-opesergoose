@@ -12,7 +12,7 @@ export function GetFiledMapUtil(options: MappingProperty) {
         const map = {
             ...options,
             properties: nestedSchema.map,
-        } as MappingPropertyBaseWithPropertiesFromClass
+        }
         delete map['propertiesFromClass']
         return map
     } else return options

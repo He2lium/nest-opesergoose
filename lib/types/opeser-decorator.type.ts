@@ -1,5 +1,3 @@
-import {MappingPropertyBase} from "@opensearch-project/opensearch/api/types";
-
-export interface MappingPropertyBaseWithPropertiesFromClass extends MappingPropertyBase {
+export interface MappingPropertyBaseWithPropertiesFromClass {
     propertiesFromClass: any
 }
