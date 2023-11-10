@@ -11,9 +11,11 @@ export const OpeserConnectPluginFactory =
     schema: Schema,
     options: Omit<OpeserOptions.PluginOptions, "index" | "mapProperties">
   ) => {
+    const { settings, map } = OpeserMappingStorage.getSchemaByIndex(index);
     schema.plugin(OpesergooseFactory(client, prefix), {
       ...options,
       index,
-      mapProperties: OpeserMappingStorage.getSchemaByIndex(index).map ?? {},
+      mapProperties: map ?? {},
+      settings,
     });
   };
