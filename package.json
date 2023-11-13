@@ -5,6 +5,7 @@
     "@nestjs/common": "^10.2.6",
     "@nestjs/swagger": "^7.1.12",
     "@opensearch-project/opensearch": "^2.4.0",
+    "lodash": "^4.17.21",
     "mongoose": "^7.6.3",
     "opesergoose": "^1.0.13",
     "reflect-metadata": "^0.1.13",
@@ -22,6 +23,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@types/lodash": "^4.14.201",
     "@types/node": "^20.7.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.2.2"
