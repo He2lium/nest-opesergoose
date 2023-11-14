@@ -17,10 +17,12 @@ export const OgSchema = (
     const mapping: Record<string, MappingProperty> = {};
 
     for (let field of fields) {
-      mapping[field.key] = GetFiledMapUtil(field.options).map;
+      const { map, analysis } = GetFiledMapUtil(field.options);
+      mapping[field.key] = map;
+      settings.analysis = merge(settings.analysis, analysis);
+
       if (field.virtual) {
         const { map, analysis } = GetFiledMapUtil(field.virtual);
-
         mapping[`_${field.key}`] = map;
         settings.analysis = merge(settings.analysis, analysis);
       }
