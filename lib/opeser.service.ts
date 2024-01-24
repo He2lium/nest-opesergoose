@@ -4,6 +4,7 @@ import { OpeserOptions } from './types/opeser-module-options.type'
 import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
 import { IndicesIndexSettings, MappingProperty } from '@opensearch-project/opensearch/api/types'
 import omitDeep from 'omit-deep'
+import { HydratedDocument, Types } from 'mongoose'
 
 @Injectable()
 export class OpeserService extends Client {
@@ -30,16 +31,16 @@ export class OpeserService extends Client {
     return `${this.indexPrefix}${index}`
   }
 
-  private omit(index: string, document: any) {
+  private omit(index: string, document: HydratedDocument<Types.ObjectId>) {
     const forbiddenFields = this.forbiddenFields[index] ?? []
-    return omitDeep(document.toJSON({ virtual: true }), [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
+    return omitDeep(document.toJSON({ virtuals: true }), [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
   }
 
   async OgMap(afterCreateIndex: { [index: string]: () => any } = {}) {
     for (const index in this.schemaMapping) await this._OgMapIndex(index, afterCreateIndex[index])
   }
 
-  private async _OgMapIndex(index: string, cb?: () => any) {
+  private async _OgMapIndex(index: string, cb?: () => Promise<HydratedDocument<Types.ObjectId>[]>) {
     const properties = this.schemaMapping[index]
     const indexWithPrefix = this.getIndexWithPrefix(index)
     const settings = this.indexSettings[index]
@@ -84,7 +85,7 @@ export class OpeserService extends Client {
             },
           })
 
-          if (cb) await cb()
+          if (cb) await this.OgBulk(createdIndexName, await cb())
 
           await this.indices.delete({ index: foundIndex })
 
@@ -101,7 +102,7 @@ export class OpeserService extends Client {
         },
       })
 
-      if (cb) await cb()
+      if (cb) await this.OgBulk(createdIndexName, await cb())
 
       console.info(`a new index [${createdIndexName}] was created`)
     }
@@ -116,7 +117,7 @@ export class OpeserService extends Client {
     })
   }
 
-  async OgBulk(index: string, documents: any[]) {
+  async OgBulk(index: string, documents: HydratedDocument<Types.ObjectId>[]) {
     if (!documents.length) return
 
     const body = documents.flatMap((document) => {
