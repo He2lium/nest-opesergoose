@@ -7,6 +7,7 @@
     "@opensearch-project/opensearch": "^2.5.0",
     "lodash": "^4.17.21",
     "mongoose": "^8.1.0",
+    "omit-deep": "^0.3.0",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.1",
     "uuidv4": "^6.2.13"
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.5",
+    "@types/omit-deep": "^0.3.2",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3"
   },

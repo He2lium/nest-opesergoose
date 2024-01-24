@@ -10,7 +10,8 @@ import merge from "lodash/merge";
 
 export const OgSchema = (
   index?: string,
-  settings: IndicesIndexSettings = {}
+  settings: IndicesIndexSettings = {},
+  forbiddenFields?: string[]
 ) => {
   return function (target: any) {
     const fields: field[] = OpeserMappingStorage.getProps(target.name);
@@ -32,6 +33,7 @@ export const OgSchema = (
       class: target.name,
       settings,
       map: mapping,
+      forbiddenFields
     });
   };
 };

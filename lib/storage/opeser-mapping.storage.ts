@@ -18,6 +18,10 @@ export class OpeserMappingStorageClass {
     return this.schemas.find((schema) => schema.class === className);
   }
 
+  get getSchemas() {
+    return this.schemas;
+  }
+
   getSchemaByIndex(indexName: string) {
     return this.schemas.find((schema) => schema.index === indexName);
   }
