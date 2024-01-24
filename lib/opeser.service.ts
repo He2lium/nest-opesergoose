@@ -32,7 +32,7 @@ export class OpeserService extends Client {
 
   private omit(index: string, document: any) {
     const forbiddenFields = this.forbiddenFields[index] ?? []
-    return omitDeep(document, [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
+    return omitDeep(document.toJSON({ virtual: true }), [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
   }
 
   async OgMap(afterCreateIndex: { [index: string]: () => any } = {}) {
