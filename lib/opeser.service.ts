@@ -36,8 +36,8 @@ export class OpeserService extends Client {
     return omitDeep(document.toJSON({ virtuals: true }), [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
   }
 
-  async OgMap(afterCreateIndex: { [index: string]: () => any } = {}) {
-    for (const index in this.schemaMapping) await this._OgMapIndex(index, afterCreateIndex[index])
+  async OgMap(documentsForSynchronize: { [index: string]: () => Promise<HydratedDocument<Types.ObjectId>[]> } = {}) {
+    for (const index in this.schemaMapping) await this._OgMapIndex(index, documentsForSynchronize[index])
   }
 
   private async _OgMapIndex(index: string, cb?: () => Promise<HydratedDocument<Types.ObjectId>[]>) {
