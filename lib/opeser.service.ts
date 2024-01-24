@@ -11,7 +11,7 @@ export class OpeserService extends Client {
   private readonly schemaMapping: {
     [index: string]: Record<string, MappingProperty>
   } = {}
-  private readonly indexSettings: { [index: string]: IndicesIndexSettings }
+  private readonly indexSettings: { [index: string]: IndicesIndexSettings } = {}
 
   constructor(options: OpeserOptions) {
     super(options)
@@ -29,7 +29,11 @@ export class OpeserService extends Client {
     return omitDeep(document, [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
   }
 
-  async OgMap(index: string) {
+  async OgMap(afterCreateIndex: { [index: string]: () => any } = {}) {
+    for (const index in this.schemaMapping) await this._OgMapIndex(index, afterCreateIndex[index])
+  }
+
+  private async _OgMapIndex(index: string, cb?: () => any) {
     const properties = this.schemaMapping[index]
     const indexWithPrefix = `${process.env['OPENSEARCH_INDEX_PREFIX'] || ''}${index}`
     const settings = this.indexSettings[index]
@@ -46,8 +50,7 @@ export class OpeserService extends Client {
           // check that the new mapping does not conflict with the previous one
           await this.indices.putMapping({ index: foundIndex, body: { properties } })
 
-          console.log(`DEBUG ${index} index settings:`, settings)
-          if (settings) {
+          if (settings && Object.keys(settings).length) {
             await this.indices.close({ index: foundIndex })
 
             try {
@@ -75,6 +78,8 @@ export class OpeserService extends Client {
             },
           })
 
+          if (cb) await cb()
+
           await this.indices.delete({ index: foundIndex })
 
           console.info(`index [${foundIndex}] was deleted. A new index [${createdIndexName}] was created`)
@@ -89,6 +94,8 @@ export class OpeserService extends Client {
           settings: this.indexSettings[index],
         },
       })
+
+      if (cb) await cb()
 
       console.info(`a new index [${createdIndexName}] was created`)
     }
