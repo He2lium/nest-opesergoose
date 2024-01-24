@@ -1,57 +1,122 @@
-import {Injectable} from "@nestjs/common";
-import {Client} from "@opensearch-project/opensearch";
-import {OpeserOptions} from "./types/opeser-module-options.type";
-import {OpeserMappingStorage} from "./storage/opeser-mapping.storage";
-import {MappingProperty} from "@opensearch-project/opensearch/api/types";
+import { Injectable } from '@nestjs/common'
+import { Client } from '@opensearch-project/opensearch'
+import { OpeserOptions } from './types/opeser-module-options.type'
+import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
+import { IndicesIndexSettings, MappingProperty } from '@opensearch-project/opensearch/api/types'
 import omitDeep from 'omit-deep'
 
 @Injectable()
 export class OpeserService extends Client {
+  private readonly forbiddenFields: { [index: string]: string[] } = {}
+  private readonly schemaMapping: {
+    [index: string]: Record<string, MappingProperty>
+  } = {}
+  private readonly indexSettings: { [index: string]: IndicesIndexSettings }
 
-    private readonly forbiddenFields: { [index: string]: string[] } = {}
-    private readonly schemaMapping: { [index: string]: Record<string, MappingProperty> } = {}
+  constructor(options: OpeserOptions) {
+    super(options)
+    for (const schema of OpeserMappingStorage.schemas) {
+      if (!schema.index) continue
+      this.schemaMapping[schema.index] = schema.map
 
-    constructor(options: OpeserOptions) {
-        super(options);
-        for (let schema of OpeserMappingStorage.getSchemas) {
-            if (!schema.index) continue;
-            this.schemaMapping[schema.index] = schema.map
+      if (schema.forbiddenFields) this.forbiddenFields[schema.index] = schema.forbiddenFields
+      if (schema.settings) this.indexSettings[schema.index] = schema.settings
+    }
+  }
 
-            if (schema.forbiddenFields)
-                this.forbiddenFields[schema.index] = schema.forbiddenFields
+  private omit(index: string, document: any) {
+    const forbiddenFields = this.forbiddenFields[index] ?? []
+    return omitDeep(document, [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
+  }
+
+  async OgMap(index: string) {
+    const properties = this.schemaMapping[index]
+    const indexWithPrefix = `${process.env['OPENSEARCH_INDEX_PREFIX'] || ''}${index}`
+    const settings = this.indexSettings[index]
+
+    const { body: foundIndexes } = await this.indices.get({
+      index: `${indexWithPrefix}_*`,
+    })
+
+    const createdIndexName = `${indexWithPrefix}_${Date.now()}`
+
+    if (Object.keys(foundIndexes).length) {
+      for (const foundIndex in foundIndexes) {
+        try {
+          // check that the new mapping does not conflict with the previous one
+          await this.indices.putMapping({ index: foundIndex, body: { properties } })
+
+          console.log(`DEBUG ${index} index settings:`, settings)
+          if (settings) {
+            await this.indices.close({ index: foundIndex })
+
+            try {
+              await this.indices.putSettings({
+                index: foundIndex,
+                body: { settings },
+              })
+            } catch (error) {
+              // no settings to update
+              // console.info(error)
+            }
+
+            await this.indices.open({ index: foundIndex })
+          }
+
+          console.info(`successful ${foundIndex} index re-mapping`)
+        } catch (e) {
+          // If there is a conflict in mapping, create a new index
+          await this.indices.create({
+            index: createdIndexName,
+            body: {
+              aliases: foundIndexes[foundIndex].aliases,
+              mappings: { properties },
+              settings,
+            },
+          })
+
+          await this.indices.delete({ index: foundIndex })
+
+          console.info(`index [${foundIndex}] was deleted. A new index [${createdIndexName}] was created`)
         }
-    }
+      }
+    } else {
+      await this.indices.create({
+        index: createdIndexName,
+        body: {
+          aliases: { [indexWithPrefix]: {} },
+          mappings: { properties },
+          settings: this.indexSettings[index],
+        },
+      })
 
-    private omit(index: string, document: any) {
-        const forbiddenFields = this.forbiddenFields[index] ?? []
-        return omitDeep(document, [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
+      console.info(`a new index [${createdIndexName}] was created`)
     }
+  }
 
-    async OgMap() {
+  async OgIndex(index: string, document: any, refresh: boolean = true) {
+    return this.index({
+      index,
+      id: document._id.toString(),
+      body: this.omit(index, document),
+      refresh,
+    })
+  }
 
-    }
+  async OgBulk(index: string, documents: any[]) {
+    if (!documents.length) return
 
-    async OgIndex(index: string, document: any, refresh: boolean = true) {
-        return this.index({
-            index,
-            id: document._id.toString(),
-            body: this.omit(index, document),
-            refresh
-        })
-    }
+    const body = documents.flatMap((document) => {
+      return [{ index: { _index: `${index}`, _id: document._id.toString() } }, this.omit(index, document)]
+    })
+    await this.bulk({ body })
+  }
 
-    async OgBulk(index: string, documents: any[]) {
-        const body = documents.flatMap((document) => {
-            return [{ index: { _index: `${index}`, _id: document._id.toString() } }, this.omit(index, document)]
-        })
-        if (body.length) await this.bulk({ body })
-    }
-
-    async OgDelete(index: string, id: string, refresh: boolean = true){
-        return this.delete({
-            index,
-            id,
-            refresh
-        })
-    }
+  async OgDelete(index: string, id: string, refresh: boolean = true) {
+    return this.delete({
+      index,
+      id,
+      refresh,
+    })
+  }
 }

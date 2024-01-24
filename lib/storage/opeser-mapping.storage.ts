@@ -3,7 +3,7 @@ import field = OpeserStorageType.field;
 import schema = OpeserStorageType.schema;
 
 export class OpeserMappingStorageClass {
-  private schemas: schema[] = [];
+  private _schemas: schema[] = [];
   private fields: field[] = [];
 
   setProp(field: field) {
@@ -15,19 +15,19 @@ export class OpeserMappingStorageClass {
   }
 
   getSchemaByClass(className: string) {
-    return this.schemas.find((schema) => schema.class === className);
+    return this._schemas.find((schema) => schema.class === className);
   }
 
-  get getSchemas() {
-    return this.schemas;
+  get schemas() {
+    return this._schemas;
   }
 
   getSchemaByIndex(indexName: string) {
-    return this.schemas.find((schema) => schema.index === indexName);
+    return this._schemas.find((schema) => schema.index === indexName);
   }
 
   setSchema(schema: schema) {
-    this.schemas.push(schema);
+    this._schemas.push(schema);
   }
 }
 
