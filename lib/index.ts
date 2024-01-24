@@ -14,4 +14,3 @@ export {
 } from "./types/opeser-module-options.type";
 export { OpeserStorageType } from "./types/opeser-storage.type";
 export { OpeserMappingStorage } from "./storage/opeser-mapping.storage";
-export { OpeserPluginConnector } from "./types/opeser-plugin-connector.type";
