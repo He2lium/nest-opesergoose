@@ -85,7 +85,7 @@ export class OpeserService extends Client {
             },
           })
 
-          if (cb) await this.OgBulk(createdIndexName, await cb())
+          if (cb) await this.OgBulk(index, await cb())
 
           await this.indices.delete({ index: foundIndex })
 
@@ -102,7 +102,7 @@ export class OpeserService extends Client {
         },
       })
 
-      if (cb) await this.OgBulk(createdIndexName, await cb())
+      if (cb) await this.OgBulk(index, await cb())
 
       console.info(`a new index [${createdIndexName}] was created`)
     }
