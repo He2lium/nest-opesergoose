@@ -12,9 +12,11 @@ export class OpeserService extends Client {
     [index: string]: Record<string, MappingProperty>
   } = {}
   private readonly indexSettings: { [index: string]: IndicesIndexSettings } = {}
+  private readonly indexPrefix: string
 
   constructor(options: OpeserOptions) {
     super(options)
+    this.indexPrefix = `${process.env['OPENSEARCH_INDEX_PREFIX'] || ''}`
     for (const schema of OpeserMappingStorage.schemas) {
       if (!schema.index) continue
       this.schemaMapping[schema.index] = schema.map
@@ -22,6 +24,10 @@ export class OpeserService extends Client {
       if (schema.forbiddenFields) this.forbiddenFields[schema.index] = schema.forbiddenFields
       if (schema.settings) this.indexSettings[schema.index] = schema.settings
     }
+  }
+
+  private getIndexWithPrefix(index: string) {
+    return `${this.indexPrefix}${index}`
   }
 
   private omit(index: string, document: any) {
@@ -35,7 +41,7 @@ export class OpeserService extends Client {
 
   private async _OgMapIndex(index: string, cb?: () => any) {
     const properties = this.schemaMapping[index]
-    const indexWithPrefix = `${process.env['OPENSEARCH_INDEX_PREFIX'] || ''}${index}`
+    const indexWithPrefix = this.getIndexWithPrefix(index)
     const settings = this.indexSettings[index]
 
     const { body: foundIndexes } = await this.indices.get({
@@ -103,7 +109,7 @@ export class OpeserService extends Client {
 
   async OgIndex(index: string, document: any, refresh: boolean = true) {
     return this.index({
-      index,
+      index: this.getIndexWithPrefix(index),
       id: document._id.toString(),
       body: this.omit(index, document),
       refresh,
@@ -114,14 +120,17 @@ export class OpeserService extends Client {
     if (!documents.length) return
 
     const body = documents.flatMap((document) => {
-      return [{ index: { _index: `${index}`, _id: document._id.toString() } }, this.omit(index, document)]
+      return [
+        { index: { _index: this.getIndexWithPrefix(index), _id: document._id.toString() } },
+        this.omit(index, document),
+      ]
     })
     await this.bulk({ body })
   }
 
   async OgDelete(index: string, id: string, refresh: boolean = true) {
     return this.delete({
-      index,
+      index: this.getIndexWithPrefix(index),
       id,
       refresh,
     })
