@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "rimraf dist && tsc",
-    "prepublish": "npm run build && npm version patch && git push"
+    "prepublish": "npm run build && npm version patch && npm publish"
   },
   "name": "nestjs-opesergoose",
   "version": "2.0.12",
