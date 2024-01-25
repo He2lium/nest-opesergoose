@@ -81,6 +81,7 @@ export class OpeserService extends Client {
 
           console.info(`successful ${foundIndex} index re-mapping`)
         } catch (e) {
+          recreatedFlag = true
           // If there is a conflict in mapping, create a new index
           await this.indices.create({
             index: createdIndexName,
@@ -97,6 +98,7 @@ export class OpeserService extends Client {
         }
       }
     } else {
+      recreatedFlag = true
       await this.indices.create({
         index: createdIndexName,
         body: {
