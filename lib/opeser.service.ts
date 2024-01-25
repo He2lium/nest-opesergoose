@@ -131,7 +131,7 @@ export class OpeserService extends Client {
         this.omit(index, document),
       ]
     })
-    await this.bulk({ body })
+    return this.bulk({ body })
   }
 
   async OgDelete(index: string, id: string, refresh: boolean = true) {
