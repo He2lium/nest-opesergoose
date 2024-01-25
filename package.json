@@ -25,7 +25,6 @@
     "@types/lodash": "^4.14.202",
     "@types/node": "^20.11.5",
     "@types/omit-deep": "^0.3.2",
-    "mongoose": "^8.1.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3"
   },

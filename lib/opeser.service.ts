@@ -4,7 +4,7 @@ import { OpeserOptions } from './types/opeser-module-options.type'
 import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
 import { IndicesIndexSettings, MappingProperty } from '@opensearch-project/opensearch/api/types'
 import omitDeep from 'omit-deep'
-import { HydratedDocument, Types } from 'mongoose'
+import {OpeserDocumentType} from "./types/opeser-document.type";
 
 @Injectable()
 export class OpeserService extends Client {
@@ -17,7 +17,7 @@ export class OpeserService extends Client {
 
   constructor(options: OpeserOptions) {
     super(options)
-    this.indexPrefix = `${process.env['OPENSEARCH_INDEX_PREFIX'] || ''}`
+    this.indexPrefix = options.prefix
     for (const schema of OpeserMappingStorage.schemas) {
       if (!schema.index) continue
       this.schemaMapping[schema.index] = schema.map
@@ -31,16 +31,22 @@ export class OpeserService extends Client {
     return `${this.indexPrefix}${index}`
   }
 
-  private omit(index: string, document: HydratedDocument<Types.ObjectId>) {
+  private omit(index: string, document: OpeserDocumentType) {
     const forbiddenFields = this.forbiddenFields[index] ?? []
-    return omitDeep(document.toJSON({ virtuals: true }), [...new Set([...forbiddenFields, 'id', '_id', '__v'])])
+    return omitDeep(document, [...new Set(forbiddenFields)])
   }
 
-  async OgMap(documentsForSynchronize: { [index: string]: () => Promise<HydratedDocument<Types.ObjectId>[]> } = {}) {
-    for (const index in this.schemaMapping) await this._OgMapIndex(index, documentsForSynchronize[index])
+  async OgMap() {
+    let recreatedIndexAliases:string[] = []
+    for (const index in this.schemaMapping){
+      if(await this._OgMapIndex(index))
+        recreatedIndexAliases.push(index)
+    }
+    return recreatedIndexAliases
   }
 
-  private async _OgMapIndex(index: string, cb?: () => Promise<HydratedDocument<Types.ObjectId>[]>) {
+  private async _OgMapIndex(index: string): Promise<boolean> {
+    let recreatedFlag = false
     const properties = this.schemaMapping[index]
     const indexWithPrefix = this.getIndexWithPrefix(index)
     const settings = this.indexSettings[index]
@@ -85,8 +91,6 @@ export class OpeserService extends Client {
             },
           })
 
-          if (cb) await this.OgBulk(index, await cb())
-
           await this.indices.delete({ index: foundIndex })
 
           console.info(`index [${foundIndex}] was deleted. A new index [${createdIndexName}] was created`)
@@ -102,27 +106,26 @@ export class OpeserService extends Client {
         },
       })
 
-      if (cb) await this.OgBulk(index, await cb())
-
       console.info(`a new index [${createdIndexName}] was created`)
     }
+    return recreatedFlag
   }
 
-  async OgIndex(index: string, document: any, refresh: boolean = true) {
+  async OgIndex(index: string, document: OpeserDocumentType, refresh: boolean = true) {
     return this.index({
       index: this.getIndexWithPrefix(index),
-      id: document._id.toString(),
+      id: document.id,
       body: this.omit(index, document),
       refresh,
     })
   }
 
-  async OgBulk(index: string, documents: HydratedDocument<Types.ObjectId>[]) {
+  async OgBulk(index: string, documents: OpeserDocumentType[]) {
     if (!documents.length) return
 
     const body = documents.flatMap((document) => {
       return [
-        { index: { _index: this.getIndexWithPrefix(index), _id: document._id.toString() } },
+        { index: { _index: this.getIndexWithPrefix(index), _id: document.id } },
         this.omit(index, document),
       ]
     })
