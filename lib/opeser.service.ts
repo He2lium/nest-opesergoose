@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common'
 import { Client } from '@opensearch-project/opensearch'
 import { OpeserOptions } from './types/opeser-module-options.type'
 import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
-import { IndicesIndexSettings, MappingProperty } from '@opensearch-project/opensearch/api/types'
+import {
+  IndicesIndexSettings,
+  MappingProperty, SearchHit,
+  SearchRequest,
+  SearchTemplateResponse
+} from '@opensearch-project/opensearch/api/types'
 import * as _ from 'lodash'
 import { OpeserDocumentType } from './types/opeser-document.type'
 
@@ -135,6 +140,20 @@ export class OpeserService extends Client {
       index: this.getIndexWithPrefix(index),
       id,
       refresh,
+    })
+  }
+
+  async OgSearch<ResponseType = any>(index: string, body: SearchRequest['body']){
+    return this.search<SearchTemplateResponse<ResponseType>>({
+      index: this.getIndexWithPrefix(index),
+      body
+    })
+  }
+
+  async OgGet<ResponseType = any>(index: string, id: string){
+    return this.get<SearchHit<ResponseType>>({
+      index,
+      id
     })
   }
 }
