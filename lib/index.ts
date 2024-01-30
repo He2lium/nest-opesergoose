@@ -9,3 +9,4 @@ export {OpeserAsyncOptions, OpeserOptions} from './types/opeser-module-options.t
 export {OpeserStorageType} from './types/opeser-storage.type'
 export {OpeserMappingStorage} from './storage/opeser-mapping.storage'
 export {OpeserDocumentType} from "./types/opeser-document.type";
+export {SearchRequest} from '@opensearch-project/opensearch/api/types'
