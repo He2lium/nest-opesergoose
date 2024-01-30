@@ -3,8 +3,8 @@ import { Client } from '@opensearch-project/opensearch'
 import { OpeserOptions } from './types/opeser-module-options.type'
 import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
 import { IndicesIndexSettings, MappingProperty } from '@opensearch-project/opensearch/api/types'
-import omitDeep from 'omit-deep'
-import {OpeserDocumentType} from "./types/opeser-document.type";
+import * as _ from 'lodash'
+import { OpeserDocumentType } from './types/opeser-document.type'
 
 @Injectable()
 export class OpeserService extends Client {
@@ -33,14 +33,13 @@ export class OpeserService extends Client {
 
   private omit(index: string, document: OpeserDocumentType) {
     const forbiddenFields = this.forbiddenFields[index] ?? []
-    return omitDeep(document, [...new Set([...forbiddenFields,'_id','__v', 'id'])])
+    return _.omit(document, [...new Set([...forbiddenFields, '_id', '__v', 'id'])])
   }
 
   async OgMap() {
-    let recreatedIndexAliases:string[] = []
-    for (const index in this.schemaMapping){
-      if(await this._OgMapIndex(index))
-        recreatedIndexAliases.push(index)
+    let recreatedIndexAliases: string[] = []
+    for (const index in this.schemaMapping) {
+      if (await this._OgMapIndex(index)) recreatedIndexAliases.push(index)
     }
     return recreatedIndexAliases
   }
@@ -126,10 +125,7 @@ export class OpeserService extends Client {
     if (!documents.length) return
 
     const body = documents.flatMap((document) => {
-      return [
-        { index: { _index: this.getIndexWithPrefix(index), _id: document.id } },
-        this.omit(index, document),
-      ]
+      return [{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.omit(index, document)]
     })
     return this.bulk({ body })
   }
