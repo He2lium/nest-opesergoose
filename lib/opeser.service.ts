@@ -152,7 +152,7 @@ export class OpeserService extends Client {
 
   async OgGet<ResponseType = any>(index: string, id: string){
     return this.get<SearchHit<ResponseType>>({
-      index,
+      index: this.getIndexWithPrefix(index),
       id
     })
   }
