@@ -3,14 +3,15 @@ import { Client } from '@opensearch-project/opensearch'
 import { OpeserOptions } from './types/opeser-module-options.type'
 import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
 import {
+  AggregationsAggregate,
   IndicesIndexSettings,
-  MappingProperty, SearchHit,
-  SearchRequest,
-  SearchTemplateResponse
+  MappingProperty,
+  SearchHit,
+  SearchRequest
 } from '@opensearch-project/opensearch/api/types'
 import * as _ from 'lodash'
 import { OpeserDocumentType } from './types/opeser-document.type'
-
+import {OpeserSearchResponseType} from "./types/opeser-search-response.type";
 @Injectable()
 export class OpeserService extends Client {
   private readonly forbiddenFields: { [index: string]: string[] } = {}
@@ -143,8 +144,8 @@ export class OpeserService extends Client {
     })
   }
 
-  async OgSearch<ResponseType = any>(index: string, body: SearchRequest['body']){
-    return this.search<SearchTemplateResponse<ResponseType>>({
+  async OgSearch<ResponseType = any, AggregationsType = AggregationsAggregate>(index: string, body: SearchRequest['body']){
+    return this.search<OpeserSearchResponseType<ResponseType,AggregationsType>>({
       index: this.getIndexWithPrefix(index),
       body
     })

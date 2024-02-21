@@ -9,4 +9,28 @@ export {OpeserAsyncOptions, OpeserOptions} from './types/opeser-module-options.t
 export {OpeserStorageType} from './types/opeser-storage.type'
 export {OpeserMappingStorage} from './storage/opeser-mapping.storage'
 export {OpeserDocumentType} from "./types/opeser-document.type";
-export {SearchRequest} from '@opensearch-project/opensearch/api/types'
+export {OpeserSearchResponseType} from "./types/opeser-search-response.type";
+export {
+    SearchRequest,
+    AggregationsAggregate,
+    AggregationsSingleBucketAggregate,
+    AggregationsAutoDateHistogramAggregate,
+    AggregationsFiltersAggregate,
+    AggregationsSignificantTermsAggregate,
+    AggregationsTermsAggregate,
+    AggregationsBucketAggregate,
+    AggregationsCompositeBucketAggregate,
+    AggregationsMultiBucketAggregate,
+    AggregationsMatrixStatsAggregate,
+    AggregationsKeyedValueAggregate,
+    AggregationsMetricAggregate,
+    AggregationsBucket,
+    AggregationsCompositeBucket,
+    AggregationsDateHistogramBucket,
+    AggregationsFiltersBucketItem,
+    AggregationsIpRangeBucket,
+    AggregationsRangeBucket,
+    AggregationsRareTermsBucket,
+    AggregationsSignificantTermsBucket,
+    AggregationsKeyedBucket
+} from '@opensearch-project/opensearch/api/types'
