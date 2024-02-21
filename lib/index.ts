@@ -32,5 +32,6 @@ export {
     AggregationsRangeBucket,
     AggregationsRareTermsBucket,
     AggregationsSignificantTermsBucket,
-    AggregationsKeyedBucket
+    AggregationsKeyedBucket,
+    QueryDslQueryContainer
 } from '@opensearch-project/opensearch/api/types'

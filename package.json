@@ -12,10 +12,10 @@
   },
   "scripts": {
     "build": "rimraf dist && tsc",
-    "prepublish": "npm run build && npm version patch && npm publish"
+    "publish": "npm run build && npm version patch && git push && npm publish"
   },
   "name": "nestjs-opesergoose",
-  "version": "2.0.23",
+  "version": "2.0.37",
   "description": "This module make Opesergoose for Nest",
   "files": [
     "dist"
