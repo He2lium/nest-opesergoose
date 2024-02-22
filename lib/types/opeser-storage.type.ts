@@ -11,7 +11,6 @@ export namespace OpeserStorageType{
         index?: string
         class: string
         settings?: IndicesIndexSettings
-        map: Record<string, MappingProperty>,
-        forbiddenFields?: string[]
+        map: Record<string, MappingProperty>
     }
 }

@@ -15,7 +15,7 @@
     "_publish": "npm run build && npm version patch && git push && npm publish"
   },
   "name": "nestjs-opesergoose",
-  "version": "2.0.42",
+  "version": "2.1.0",
   "description": "This module make Opesergoose for Nest",
   "files": [
     "dist"
@@ -25,6 +25,7 @@
     "@types/node": "^20.11.5",
     "@types/omit-deep": "^0.3.2",
     "rimraf": "^5.0.5",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "keywords": [

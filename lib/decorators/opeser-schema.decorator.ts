@@ -5,7 +5,7 @@ import { GetFiledMapUtil } from '../utils/get-filed-map.util'
 import { OpeserMappingStorage } from '../storage/opeser-mapping.storage'
 import merge from 'lodash/merge'
 
-export const OgSchema = (index?: string, settings: IndicesIndexSettings = {}, forbiddenFields?: string[]) => {
+export const OgSchema = (index?: string, settings: IndicesIndexSettings = {}) => {
   return function (target: any) {
     const fields: field[] = OpeserMappingStorage.getProps(target.name)
     const mapping: Record<string, MappingProperty> = {}
@@ -26,7 +26,6 @@ export const OgSchema = (index?: string, settings: IndicesIndexSettings = {}, fo
       class: target.name,
       settings,
       map: mapping,
-      forbiddenFields,
     })
   }
 }

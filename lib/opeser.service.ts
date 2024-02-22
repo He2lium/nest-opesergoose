@@ -9,12 +9,11 @@ import {
   SearchHit,
   SearchRequest
 } from '@opensearch-project/opensearch/api/types'
-import * as _ from 'lodash'
 import { OpeserDocumentType } from './types/opeser-document.type'
 import {OpeserSearchResponseType} from "./types/opeser-search-response.type";
+import {OmitByMapUtil} from "./utils/omit-by-map.util";
 @Injectable()
 export class OpeserService extends Client {
-  private readonly forbiddenFields: { [index: string]: string[] } = {}
   private readonly schemaMapping: {
     [index: string]: Record<string, MappingProperty>
   } = {}
@@ -28,7 +27,6 @@ export class OpeserService extends Client {
       if (!schema.index) continue
       this.schemaMapping[schema.index] = schema.map
 
-      if (schema.forbiddenFields) this.forbiddenFields[schema.index] = schema.forbiddenFields
       if (schema.settings) this.indexSettings[schema.index] = schema.settings
     }
   }
@@ -38,8 +36,7 @@ export class OpeserService extends Client {
   }
 
   private omit(index: string, document: OpeserDocumentType) {
-    const forbiddenFields = this.forbiddenFields[index] ?? []
-    return _.omit(document, [...new Set([...forbiddenFields, '_id', '__v', 'id'])])
+    return OmitByMapUtil(this.schemaMapping[index], document)
   }
 
   async OgMap() {
