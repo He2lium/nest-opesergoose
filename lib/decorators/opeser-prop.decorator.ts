@@ -4,14 +4,12 @@ import {OpeserMappingStorage} from "../storage/opeser-mapping.storage";
 
 export const OgProp = (
     options: MappingPropertyBaseWithPropertiesFromClass & MappingProperty,
-    virtual?: MappingPropertyBaseWithPropertiesFromClass & MappingProperty,
 ) => {
     return function (target: any, propertyKey: string) {
         OpeserMappingStorage.setProp({
             key: propertyKey,
             parent: target.constructor.name,
-            options,
-            virtual,
+            options
         })
     }
 }

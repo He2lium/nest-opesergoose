@@ -5,18 +5,19 @@ import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
 import {
   AggregationsAggregate,
   IndicesIndexSettings,
-  MappingProperty,
   SearchHit,
   SearchRequest
 } from '@opensearch-project/opensearch/api/types'
 import { OpeserDocumentType } from './types/opeser-document.type'
 import {OpeserSearchResponseType} from "./types/opeser-search-response.type";
 import {OmitByMapUtil} from "./utils/omit-by-map.util";
+import {OpeserStorageType} from "./types/opeser-storage.type";
 @Injectable()
 export class OpeserService extends Client {
-  private readonly schemaMapping: {
-    [index: string]: Record<string, MappingProperty>
+  private readonly schemas: {
+    [index: string]: OpeserStorageType.schema
   } = {}
+
   private readonly indexSettings: { [index: string]: IndicesIndexSettings } = {}
   private readonly indexPrefix: string
 
@@ -25,7 +26,7 @@ export class OpeserService extends Client {
     this.indexPrefix = options.prefix
     for (const schema of OpeserMappingStorage.schemas) {
       if (!schema.index) continue
-      this.schemaMapping[schema.index] = schema.map
+      this.schemas[schema.index] = schema
 
       if (schema.settings) this.indexSettings[schema.index] = schema.settings
     }
@@ -35,13 +36,14 @@ export class OpeserService extends Client {
     return `${this.indexPrefix}${index}`
   }
 
-  private omit(index: string, document: OpeserDocumentType) {
-    return OmitByMapUtil(this.schemaMapping[index], document)
+  private prepare(index: string, document: OpeserDocumentType) {
+    const {map, transform} = this.schemas[index]
+    return OmitByMapUtil(map, !!transform?transform(document):document)
   }
 
   async OgMap() {
     let recreatedIndexAliases: string[] = []
-    for (const index in this.schemaMapping) {
+    for (const index in this.schemas) {
       if (await this._OgMapIndex(index)) recreatedIndexAliases.push(index)
     }
     return recreatedIndexAliases
@@ -49,7 +51,7 @@ export class OpeserService extends Client {
 
   private async _OgMapIndex(index: string): Promise<boolean> {
     let recreatedFlag = false
-    const properties = this.schemaMapping[index]
+    const properties = this.schemas[index].map
     const indexWithPrefix = this.getIndexWithPrefix(index)
     const settings = this.indexSettings[index]
 
@@ -119,7 +121,7 @@ export class OpeserService extends Client {
     return this.index({
       index: this.getIndexWithPrefix(index),
       id: document.id,
-      body: this.omit(index, document),
+      body: this.prepare(index, document),
       refresh,
     })
   }
@@ -128,7 +130,7 @@ export class OpeserService extends Client {
     if (!documents.length) return
 
     const body = documents.flatMap((document) => {
-      return [{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.omit(index, document)]
+      return [{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.prepare(index, document)]
     })
     return this.bulk({ body })
   }
