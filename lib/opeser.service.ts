@@ -134,14 +134,14 @@ export class OpeserService extends Client {
       }
   ) {
     let indexBody = []
-    if (!documents.index.length){
+    if (documents.index?.length){
       indexBody = documents.index.flatMap((document) =>
           ([{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.prepare(index, document)])
       )
     }
 
     let deleteBody = []
-    if(documents.delete.length){
+    if(documents.delete?.length){
       deleteBody = documents.delete.map((id) =>
           ({ delete: { _index: this.getIndexWithPrefix(index), _id: id } })
       )
