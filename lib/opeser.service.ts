@@ -126,13 +126,28 @@ export class OpeserService extends Client {
     })
   }
 
-  async OgBulk(index: string, documents: OpeserDocumentType[]) {
-    if (!documents.length) return
+  async OgBulk(
+      index: string,
+      documents: {
+        index: OpeserDocumentType[],
+        delete: string[]
+      }
+  ) {
+    let indexBody = []
+    if (!documents.index.length){
+      indexBody = documents.index.flatMap((document) =>
+          ([{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.prepare(index, document)])
+      )
+    }
 
-    const body = documents.flatMap((document) => {
-      return [{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.prepare(index, document)]
-    })
-    return this.bulk({ body })
+    let deleteBody = []
+    if(documents.delete.length){
+      deleteBody = documents.delete.map((id) =>
+          ({ delete: { _index: this.getIndexWithPrefix(index), _id: id } })
+      )
+    }
+
+    return this.bulk({ body: [...indexBody, ...deleteBody] })
   }
 
   async OgDelete(index: string, id: string, refresh: boolean = true) {
