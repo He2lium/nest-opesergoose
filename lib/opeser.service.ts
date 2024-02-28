@@ -129,8 +129,8 @@ export class OpeserService extends Client {
   async OgBulk(
       index: string,
       documents: {
-        index: OpeserDocumentType[],
-        delete: string[]
+        index?: OpeserDocumentType[],
+        delete?: string[]
       }
   ) {
     let indexBody = []
