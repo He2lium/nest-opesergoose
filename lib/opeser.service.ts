@@ -41,19 +41,19 @@ export class OpeserService extends Client {
     return OmitByMapUtil(map, !!transform?transform(document):document)
   }
 
-  async OgMap() {
+  async OgMap(settingsMap?:Map<string, IndicesIndexSettings>) {
     let recreatedIndexAliases: string[] = []
     for (const index in this.schemas) {
-      if (await this._OgMapIndex(index)) recreatedIndexAliases.push(index)
+      if (await this._OgMapIndex(index, settingsMap.get(index))) recreatedIndexAliases.push(index)
     }
     return recreatedIndexAliases
   }
 
-  private async _OgMapIndex(index: string): Promise<boolean> {
+  private async _OgMapIndex(index: string, customSettings?: IndicesIndexSettings): Promise<boolean> {
     let recreatedFlag = false
     const properties = this.schemas[index].map
     const indexWithPrefix = this.getIndexWithPrefix(index)
-    const settings = this.indexSettings[index]
+    const settings = customSettings ?? this.indexSettings[index]
 
     const { body: foundIndexes } = await this.indices.get({
       index: `${indexWithPrefix}_*`,
