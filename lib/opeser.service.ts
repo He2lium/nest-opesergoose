@@ -158,6 +158,14 @@ export class OpeserService extends Client {
     })
   }
 
+  async OgDeleteByQuery(index: string, body: SearchRequest['body'], refresh: boolean = true){
+    return this.deleteByQuery({
+      index: this.getIndexWithPrefix(index),
+      body,
+      refresh
+    })
+  }
+
   async OgSearch<ResponseType = any, AggregationsType = AggregationsAggregate>(index: string, body: SearchRequest['body']){
     return this.search<OpeserSearchResponseType<ResponseType,AggregationsType>>({
       index: this.getIndexWithPrefix(index),
