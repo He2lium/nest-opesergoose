@@ -18,115 +18,112 @@ export class OpeserService extends Client {
     [index: string]: OpeserStorageType.schema
   } = {}
 
-  private readonly indexSettings: { [index: string]: IndicesIndexSettings } = {}
-  private readonly indexPrefix: string
+  private readonly _indexSettings: { [index: string]: IndicesIndexSettings } = {}
+  private readonly _indexPrefix: string
 
   constructor(options: OpeserOptions) {
     super(options)
-    this.indexPrefix = options.prefix
+    this._indexPrefix = options.prefix
     for (const schema of OpeserMappingStorage.schemas) {
       if (!schema.index) continue
       this.schemas[schema.index] = schema
 
-      if (schema.settings) this.indexSettings[schema.index] = schema.settings
+      if (schema.settings) this._indexSettings[schema.index] = schema.settings
     }
   }
 
-  private getIndexWithPrefix(index: string) {
-    return `${this.indexPrefix}${index}`
+  private _getIndexWithPrefix(index: string) {
+    return `${this._indexPrefix}${index}`
   }
 
-  private prepare(index: string, document: OpeserDocumentType) {
+  private _prepare(index: string, document: OpeserDocumentType) {
     const {map, transform} = this.schemas[index]
     return OmitByMapUtil(map, !!transform?transform(document):document)
   }
 
-  async OgMap(settingsMap?:Map<string, IndicesIndexSettings>) {
-    let recreatedIndexAliases: string[] = []
+  /**
+   * Recreate all indexes without data
+   * @param settingsMap
+   */
+  async ogRecreateIndexes(settingsMap?:Map<string, IndicesIndexSettings>) {
     for (const index in this.schemas) {
-      if (await this._OgMapIndex(index, settingsMap.get(index))) recreatedIndexAliases.push(index)
+      await this.ogRecreateIndex(index, settingsMap.get(index))
     }
-    return recreatedIndexAliases
   }
 
-  private async _OgMapIndex(index: string, customSettings?: IndicesIndexSettings): Promise<boolean> {
-    let recreatedFlag = false
+  /**
+   * Recreate index without data
+   * @param index
+   * @param customSettings
+   */
+  async ogRecreateIndex(index: string, customSettings?: IndicesIndexSettings) {
     const properties = this.schemas[index].map
-    const indexWithPrefix = this.getIndexWithPrefix(index)
-    const settings = customSettings ?? this.indexSettings[index]
+    const indexWithPrefix = this._getIndexWithPrefix(index)
+    const settings = customSettings ?? this._indexSettings[index]
 
-    const { body: foundIndexes } = await this.indices.get({
-      index: `${indexWithPrefix}_*`,
-    })
+    const {body: exists} = await this.indices.exists({index: indexWithPrefix})
 
-    const createdIndexName = `${indexWithPrefix}_${Date.now()}`
-
-    if (Object.keys(foundIndexes).length) {
-      for (const foundIndex in foundIndexes) {
-        try {
-          // check that the new mapping does not conflict with the previous one
-          await this.indices.putMapping({ index: foundIndex, body: { properties } })
-
-          if (settings && Object.keys(settings).length) {
-            await this.indices.close({ index: foundIndex })
-
-            try {
-              await this.indices.putSettings({
-                index: foundIndex,
-                body: { settings },
-              })
-            } catch (error) {
-              // no settings to update
-              // console.info(error)
-            }
-
-            await this.indices.open({ index: foundIndex })
-          }
-
-          console.info(`successful ${foundIndex} index re-mapping`)
-        } catch (e) {
-          recreatedFlag = true
-          // If there is a conflict in mapping, create a new index
-          await this.indices.create({
-            index: createdIndexName,
-            body: {
-              aliases: foundIndexes[foundIndex].aliases,
-              mappings: { properties },
-              settings,
-            },
-          })
-
-          await this.indices.delete({ index: foundIndex })
-
-          console.info(`index [${foundIndex}] was deleted. A new index [${createdIndexName}] was created`)
-        }
-      }
-    } else {
-      recreatedFlag = true
-      await this.indices.create({
-        index: createdIndexName,
-        body: {
-          aliases: { [indexWithPrefix]: {} },
-          mappings: { properties },
-          settings: this.indexSettings[index],
-        },
-      })
-
-      console.info(`a new index [${createdIndexName}] was created`)
+    if(exists){
+      await this.indices.delete({ index: indexWithPrefix })
     }
-    return recreatedFlag
+
+    await this.indices.create({
+      index: indexWithPrefix,
+      body: {
+        mappings: { properties },
+        settings: settings,
+      },
+    })
   }
 
-  async OgIndex(index: string, document: OpeserDocumentType, refresh: boolean = true) {
+  /**
+   * Update all indexes, only exists
+   * @param settingsMap
+   */
+  async ogUpdateIndexes(settingsMap?:Map<string, IndicesIndexSettings>){
+    for (const index in this.schemas) {
+      await this.ogUpdateIndex(index, settingsMap.get(index))
+    }
+  }
+
+  /**
+   * Update one index if only it exists
+   * @param index
+   * @param customSettings
+   */
+  async ogUpdateIndex(index: string, customSettings?: IndicesIndexSettings){
+    const indexWithPrefix = this._getIndexWithPrefix(index)
+    const {body: exists} = await this.indices.exists({index: indexWithPrefix})
+    const settings = customSettings ?? this._indexSettings[index]
+    if(exists){
+      const properties = this.schemas[index].map
+      await this.indices.putMapping({ index: indexWithPrefix, body: {properties}})
+      await this.indices.putSettings({ index: indexWithPrefix, body: {settings}})
+    }
+  }
+
+  /**
+   * Store document with special id
+   * @param index
+   * @param document
+   * @param refresh
+   */
+  async ogSave(index: string, document: OpeserDocumentType, refresh: boolean = true) {
     return this.index({
-      index: this.getIndexWithPrefix(index),
+      index: this._getIndexWithPrefix(index),
       id: document.id,
-      body: this.prepare(index, document),
+      body: this._prepare(index, document),
       refresh,
     })
   }
 
-  async OgBulk(
+  /**
+   * Bulk write operation
+   * @param index
+   * @param documents
+   * @constructor
+   */
+  async ogBulk(
       index: string,
       documents: {
         index?: OpeserDocumentType[],
@@ -136,46 +133,68 @@ export class OpeserService extends Client {
     let indexBody = []
     if (documents.index?.length){
       indexBody = documents.index.flatMap((document) =>
-          ([{ index: { _index: this.getIndexWithPrefix(index), _id: document.id } }, this.prepare(index, document)])
+          ([{ index: { _index: this._getIndexWithPrefix(index), _id: document.id } }, this._prepare(index, document)])
       )
     }
 
     let deleteBody = []
     if(documents.delete?.length){
       deleteBody = documents.delete.map((id) =>
-          ({ delete: { _index: this.getIndexWithPrefix(index), _id: id } })
+          ({ delete: { _index: this._getIndexWithPrefix(index), _id: id } })
       )
     }
 
     return this.bulk({ body: [...indexBody, ...deleteBody] })
   }
 
-  async OgDelete(index: string, id: string, refresh: boolean = true) {
+  /**
+   * Delete document by ID
+   * @param index
+   * @param id
+   * @param refresh
+   */
+  async ogDelete(index: string, id: string, refresh: boolean = true) {
     return this.delete({
-      index: this.getIndexWithPrefix(index),
+      index: this._getIndexWithPrefix(index),
       id,
       refresh,
     })
   }
 
-  async OgDeleteByQuery(index: string, body: SearchRequest['body'], refresh: boolean = true){
+  /**
+   * Delete documents by special query
+   * @param index
+   * @param body
+   * @param refresh
+   */
+  async ogDeleteByQuery(index: string, body: SearchRequest['body'], refresh: boolean = true){
     return this.deleteByQuery({
-      index: this.getIndexWithPrefix(index),
+      index: this._getIndexWithPrefix(index),
       body,
       refresh
     })
   }
 
-  async OgSearch<ResponseType = any, AggregationsType = AggregationsAggregate>(index: string, body: SearchRequest['body']){
+  /**
+   * Search operation
+   * @param index
+   * @param body
+   */
+  async ogSearch<ResponseType = any, AggregationsType = AggregationsAggregate>(index: string, body: SearchRequest['body']){
     return this.search<OpeserSearchResponseType<ResponseType,AggregationsType>>({
-      index: this.getIndexWithPrefix(index),
+      index: this._getIndexWithPrefix(index),
       body
     })
   }
 
-  async OgGet<ResponseType = any>(index: string, id: string){
+  /**
+   * Get document by ID
+   * @param index
+   * @param id Document ID
+   */
+  async ogGet<ResponseType = any>(index: string, id: string){
     return this.get<SearchHit<ResponseType>>({
-      index: this.getIndexWithPrefix(index),
+      index: this._getIndexWithPrefix(index),
       id
     })
   }
