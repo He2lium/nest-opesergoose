@@ -47,7 +47,7 @@ export class OpeserService extends Client {
    */
   async ogRecreateIndexes(settingsMap?:Map<string, IndicesIndexSettings>) {
     for (const index in this.schemas) {
-      await this.ogRecreateIndex(index, settingsMap.get(index))
+      await this.ogRecreateIndex(index, settingsMap?.get(index))
     }
   }
 
