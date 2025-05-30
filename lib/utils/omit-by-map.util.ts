@@ -3,7 +3,7 @@ import {MappingProperty} from "@opensearch-project/opensearch/api/types";
 const fillResult = (objectPart: any, mapPart: Record<string, MappingProperty>) => {
     let resultPart: any = {}
     for (let fieldName in mapPart) {
-        if (objectPart[fieldName] !== undefined) continue
+        if (objectPart[fieldName] === undefined) continue
         resultPart[fieldName] =
             !!mapPart[fieldName].properties
                 ?
