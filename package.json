@@ -15,7 +15,7 @@
     "_publish": "npm run build && npm version patch && git push && npm publish"
   },
   "name": "nestjs-opesergoose",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "This module make Opesergoose for Nest",
   "files": [
     "dist"
