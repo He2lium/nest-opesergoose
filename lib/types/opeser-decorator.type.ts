@@ -1,5 +1,4 @@
-export interface MappingPropertyBaseWithPropertiesFromClass {
-    propertiesFromClass?: any
-}
+import {MappingProperty} from "@opensearch-project/opensearch/api/types";
 
-export type TransformDocumentFunctionType = (document: any)=>any
+export type MappingPropertyBaseWithPropertiesFromClass = MappingProperty & {propertiesFromClass:MappingPropertyBaseWithPropertiesFromClass}
+

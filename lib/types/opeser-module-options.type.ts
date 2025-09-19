@@ -5,7 +5,6 @@ export interface OpeserOptions extends ClientOptions{
     prefix?: string
 }
 
-
 export type OpeserAsyncOptions =
     Pick<ModuleMetadata, "imports"> &
     Pick<FactoryProvider<OpeserOptions>,"useFactory"|"inject">

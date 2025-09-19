@@ -2,31 +2,30 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@nestjs/common": "^10.3.0",
-    "@nestjs/swagger": "^7.2.0",
-    "@opensearch-project/opensearch": "^2.5.0",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/swagger": "^11.2.0",
+    "@opensearch-project/opensearch": "^2.13.0",
     "lodash": "^4.17.21",
-    "reflect-metadata": "^0.1.14",
+    "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "uuidv4": "^6.2.13"
+    "uuid": "^13.0.0"
   },
   "scripts": {
     "build": "rimraf dist && tsc",
     "_publish": "npm run build && npm version patch && git push && npm publish"
   },
   "name": "nestjs-opesergoose",
-  "version": "4.0.4",
+  "version": "5.0.0",
   "description": "This module make Opesergoose for Nest",
   "files": [
     "dist"
   ],
   "devDependencies": {
     "@types/lodash": "^4.14.202",
-    "@types/node": "^20.11.5",
-    "@types/omit-deep": "^0.3.2",
+    "@types/node": "^24.5.1",
     "rimraf": "^5.0.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.2"
   },
   "keywords": [
     "nestjs",

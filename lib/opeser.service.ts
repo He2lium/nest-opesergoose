@@ -37,8 +37,8 @@ export class OpeserService extends Client {
   }
 
   private _prepare(index: string, document: OpeserDocumentType) {
-    const {map, transform} = this.schemas[index]
-    return OmitByMapUtil(map, !!transform?transform(document):document)
+    const {map} = this.schemas[index]
+    return OmitByMapUtil(map, document)
   }
 
   /**
@@ -180,7 +180,7 @@ export class OpeserService extends Client {
    * @param index
    * @param body
    */
-  async ogSearch<ResponseType = any, AggregationsType = AggregationsAggregate>(index: string, body: SearchRequest['body']){
+  async ogSearch<ResponseType = any, AggregationsType extends AggregationsAggregate = AggregationsAggregate>(index: string, body: SearchRequest['body']){
     return this.search<OpeserSearchResponseType<ResponseType,AggregationsType>>({
       index: this._getIndexWithPrefix(index),
       body
