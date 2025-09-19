@@ -12,7 +12,7 @@ import { OpeserDocumentType } from './types/opeser-document.type'
 import {OpeserSearchResponseType} from "./types/opeser-search-response.type";
 import {OmitByMapUtil} from "./utils/omit-by-map.util";
 import {OpeserStorageType} from "./types/opeser-storage.type";
-import { Bulk, DeleteByQuery } from "@opensearch-project/opensearch/api/requestParams"
+import type {DeleteByQuery} from "@opensearch-project/opensearch/api/requestParams.js";
 
 @Injectable()
 export class OpeserService extends Client {
@@ -132,19 +132,13 @@ export class OpeserService extends Client {
         delete?: string[]
       }
   ) {
-    let indexBody:Bulk = []
-    if (documents.index?.length){
-      indexBody = documents.index.flatMap((document) =>
-          ([{ index: { _index: this._getIndexWithPrefix(index), _id: document.id } }, this._prepare(index, document)])
-      )
-    }
+    let indexBody = documents.index?.length ? documents.index.flatMap((document) =>
+        ([{ index: { _index: this._getIndexWithPrefix(index), _id: document.id } }, this._prepare(index, document)])
+    ) : []
 
-    let deleteBody:Bulk = []
-    if(documents.delete?.length){
-      deleteBody = documents.delete.map((id) =>
-          ({ delete: { _index: this._getIndexWithPrefix(index), _id: id } })
-      )
-    }
+    let deleteBody = documents.delete?.length ? documents.delete.map((id) =>
+        ({ delete: { _index: this._getIndexWithPrefix(index), _id: id } })
+    ) : []
 
     return this.bulk({ body: [...indexBody, ...deleteBody] })
   }
