@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Client } from '@opensearch-project/opensearch'
-import { OpeserOptions } from './types/opeser-module-options.type'
+import type { OpeserOptions } from './types/opeser-module-options.type'
 import { OpeserMappingStorage } from './storage/opeser-mapping.storage'
 import {
   AggregationsAggregate,
@@ -12,6 +12,8 @@ import { OpeserDocumentType } from './types/opeser-document.type'
 import {OpeserSearchResponseType} from "./types/opeser-search-response.type";
 import {OmitByMapUtil} from "./utils/omit-by-map.util";
 import {OpeserStorageType} from "./types/opeser-storage.type";
+import { Bulk, DeleteByQuery } from "@opensearch-project/opensearch/api/requestParams"
+
 @Injectable()
 export class OpeserService extends Client {
   private readonly schemas: {
@@ -23,7 +25,7 @@ export class OpeserService extends Client {
 
   constructor(options: OpeserOptions) {
     super(options)
-    this._indexPrefix = options.prefix
+    this._indexPrefix = options.prefix || ""
     for (const schema of OpeserMappingStorage.schemas) {
       if (!schema.index) continue
       this.schemas[schema.index] = schema
@@ -82,7 +84,7 @@ export class OpeserService extends Client {
    */
   async ogUpdateIndexes(settingsMap?:Map<string, IndicesIndexSettings>){
     for (const index in this.schemas) {
-      await this.ogUpdateIndex(index, settingsMap.get(index))
+      await this.ogUpdateIndex(index, settingsMap?.get(index))
     }
   }
 
@@ -130,14 +132,14 @@ export class OpeserService extends Client {
         delete?: string[]
       }
   ) {
-    let indexBody = []
+    let indexBody:Bulk = []
     if (documents.index?.length){
       indexBody = documents.index.flatMap((document) =>
           ([{ index: { _index: this._getIndexWithPrefix(index), _id: document.id } }, this._prepare(index, document)])
       )
     }
 
-    let deleteBody = []
+    let deleteBody:Bulk = []
     if(documents.delete?.length){
       deleteBody = documents.delete.map((id) =>
           ({ delete: { _index: this._getIndexWithPrefix(index), _id: id } })
@@ -168,7 +170,7 @@ export class OpeserService extends Client {
    * @param refresh
    */
   async ogDeleteByQuery(index: string, body: SearchRequest['body'], refresh: boolean = true){
-    return this.deleteByQuery({
+    return this.deleteByQuery(<DeleteByQuery>{
       index: this._getIndexWithPrefix(index),
       body,
       refresh

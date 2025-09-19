@@ -1,7 +1,8 @@
 import {MappingProperty} from "@opensearch-project/opensearch/api/types";
+import { OpeserDocumentType } from '../types/opeser-document.type'
 
-const fillResult = (objectPart: any, mapPart: Record<string, MappingProperty>) => {
-    let resultPart: any = {}
+const fillResult = <T extends object>(objectPart: T, mapPart: Record<string, MappingProperty>) => {
+    let resultPart: object = {}
     for (let fieldName in mapPart) {
         if (objectPart[fieldName] === undefined) continue
         resultPart[fieldName] =
@@ -14,10 +15,10 @@ const fillResult = (objectPart: any, mapPart: Record<string, MappingProperty>) =
     return resultPart
 }
 
-const getPart = (objectPart: any | any[], mapPart: Record<string, MappingProperty>) => {
-    let resultPart: any = {}
+const getPart = <T extends object>(objectPart: T | T[], mapPart: Record<string, MappingProperty>) => {
+    let resultPart: object = {}
     if (Array.isArray(objectPart)) {
-        let resultArray = []
+        let resultArray: object[] = []
         for (let objectPartElement of objectPart)
             resultArray.push(fillResult(objectPartElement, mapPart))
         resultPart = resultArray
@@ -27,6 +28,6 @@ const getPart = (objectPart: any | any[], mapPart: Record<string, MappingPropert
 }
 
 
-export const OmitByMapUtil = (map: Record<string, MappingProperty>, object: any) => {
+export const OmitByMapUtil = <T extends OpeserDocumentType>(map: Record<string, MappingProperty>, object: T) => {
     return getPart(object, map)
 }

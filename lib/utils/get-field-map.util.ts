@@ -7,9 +7,12 @@ export function GetFieldMapUtil(options: MappingPropertyBaseWithPropertiesFromCl
     if (options.propertiesFromClass) {
 
         // Get built schema from deeper tree branches
-        const nestedSchema: schema = OpeserMappingStorage.getSchemaByClass(
+        const nestedSchema: schema | undefined = OpeserMappingStorage.getSchemaByClass(
             options.propertiesFromClass.name
         );
+
+        if(!nestedSchema)
+          throw new Error('GetFieldMapUtil - nestedSchema is required');
 
         // Union the field options with deeper mapping properties of nested class
         const map = {
@@ -20,7 +23,7 @@ export function GetFieldMapUtil(options: MappingPropertyBaseWithPropertiesFromCl
         // Delete special custom field
         delete map["propertiesFromClass"];
 
-        return {map, analysis: nestedSchema.settings.analysis};
+        return {map, analysis: nestedSchema.settings?.analysis};
     } else
         return {map: options};
 }

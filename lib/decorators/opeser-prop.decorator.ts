@@ -3,7 +3,7 @@ import {MappingPropertyBaseWithPropertiesFromClass} from "../types/opeser-decora
 import {OpeserMappingStorage} from "../storage/opeser-mapping.storage";
 
 export const OgProp = (
-    options: MappingPropertyBaseWithPropertiesFromClass & MappingProperty,
+    options: MappingPropertyBaseWithPropertiesFromClass,
 ) => {
     return function (target: any, propertyKey: string) {
         OpeserMappingStorage.setProp({
