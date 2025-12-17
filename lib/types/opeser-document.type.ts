@@ -1,4 +1,4 @@
 export interface OpeserDocumentType{
-    id: string,
+    id?: string,
     [field: string]:any | any[]
 }
